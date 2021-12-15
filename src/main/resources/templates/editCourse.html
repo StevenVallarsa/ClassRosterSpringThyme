@@ -42,7 +42,6 @@
                                 <div th:if="${#fields.hasErrors('course.name')}">
                                     <p th:each="error : ${#fields.errors('course.name')}"
                                        class='alert alert-danger' th:text='${error}'>Bad name</p>
-                                    
                                 </div>
                             </div>
                         </div>

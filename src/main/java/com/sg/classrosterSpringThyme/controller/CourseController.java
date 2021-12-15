@@ -45,32 +45,16 @@ public class CourseController {
    boolean tCourses = false;
       
     @GetMapping("courses")
-    public String displayCourses(Model model) {
+    public String displayCourses(@Valid Course course, BindingResult result, Model model) {
         List<Course> courses = courseDao.getAllCourses();
         List<Teacher> teachers = teacherDao.getAllTeachers();
         List<Student> students = studentDao.getAllStudents();
         model.addAttribute("courses", courses);
         model.addAttribute("teachers", teachers);
         model.addAttribute("students", students);
+        model.addAttribute("err", null);
+        System.out.println(result);
         return "courses";
-    }
-    
-    @PostMapping("addCourse")
-    public String addCourse(Course course, HttpServletRequest request) {
-        String teacherId = request.getParameter("teacherId");
-        String[] studentIds = request.getParameterValues("studentId");
-        
-        course.setTeacher(teacherDao.getTeacherById(Integer.parseInt(teacherId)));
-        
-        List<Student> students = new ArrayList<>();
-        if (studentIds != null) {
-            return "redirect:/courses";
-        }
-        
-        course.setStudents(students);
-        courseDao.addCourse(course);
-        
-        return "redirect:/courses";
     }
     
     @GetMapping("courseDetail")
@@ -95,6 +79,39 @@ public class CourseController {
         model.addAttribute("students", students);
         model.addAttribute("teachers", teachers);
         return "editCourse";
+    }
+    
+    @PostMapping("addCourse")
+    public String addCourse(@Valid Course course, BindingResult result, HttpServletRequest request, Model model) {
+//    public String addCourse(Course course, HttpServletRequest request) {
+        String teacherId = request.getParameter("teacherId");
+        String[] studentIds = request.getParameterValues("studentId");
+        
+        course.setTeacher(teacherDao.getTeacherById(Integer.parseInt(teacherId)));
+        
+        List<Student> students = new ArrayList<>();
+        if (studentIds != null) {
+            for(String studentId : studentIds) {
+                students.add(studentDao.getStudentById(Integer.parseInt(studentId)));
+            }
+        } else {
+            FieldError error = new FieldError("course", "students", "Must include one student");
+            result.addError(error);
+        }
+        
+        course.setStudents(students);
+        
+        if (result.hasErrors()) {
+            model.addAttribute("teachers", teacherDao.getAllTeachers());
+            model.addAttribute("students", studentDao.getAllStudents());
+            model.addAttribute("course", course);
+            model.addAttribute("err", true);
+            return "courses";
+        }
+        
+        courseDao.addCourse(course);
+        
+        return "redirect:/courses";
     }
     
     @PostMapping("editCourse")

@@ -60,14 +60,14 @@ public class StudentController {
         return "redirect:/students";
     }
     
-@PostMapping("editStudent")
-public String performEditStudent(@Valid Student student, BindingResult result) {
-    if(result.hasErrors()) {
-        return "editStudent";
+    @PostMapping("editStudent")
+    public String performEditStudent(@Valid Student student, BindingResult result) {
+        if(result.hasErrors()) {
+            return "editStudent";
+        }
+        studentDao.updateStudent(student);
+        return "redirect:/students";
     }
-    studentDao.updateStudent(student);
-    return "redirect:/students";
-}
     
     @GetMapping("editStudent")
     public String editStudent(int id, Model model) {
